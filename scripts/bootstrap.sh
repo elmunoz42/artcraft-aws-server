@@ -82,6 +82,28 @@ if "${data_root}"; then
     systemctl restart docker
     echo "data-root is now $(docker info --format '{{.DockerRootDir}}')"
   fi
+
+  # Recent Docker keeps images and build cache in containerd's own directory, not in the
+  # data-root. Move that too, or the source build fills the root disk.
+  if docker info --format '{{.DriverStatus}}' | grep -q 'io.containerd.snapshotter'; then
+    step "containerd root -> ${DATA_DIR}/containerd"
+    cfg=/etc/containerd/config.toml
+    if grep -Eq "^root[[:space:]]*=[[:space:]]*\"${DATA_DIR}/containerd\"" "${cfg}" 2>/dev/null; then
+      echo "already set"
+    elif grep -Eq '^root[[:space:]]*=' "${cfg}" 2>/dev/null; then
+      die "${cfg} already sets a root; point it at ${DATA_DIR}/containerd yourself"
+    else
+      [ -z "$(docker images -q)" ] || die "images already exist in containerd's current root; run 'docker system prune -af' first"
+      mkdir -p /etc/containerd "${DATA_DIR}/containerd"
+      touch "${cfg}"
+      # A top-level key must come before any [table] header, so put it on the first line.
+      sed -i "1i root = \"${DATA_DIR}/containerd\"" "${cfg}" 2>/dev/null || true
+      [ -s "${cfg}" ] || echo "root = \"${DATA_DIR}/containerd\"" > "${cfg}"
+      systemctl restart containerd
+      systemctl restart docker
+      echo "containerd root is now ${DATA_DIR}/containerd"
+    fi
+  fi
 fi
 
 if [ "${swap_gb}" -gt 0 ]; then

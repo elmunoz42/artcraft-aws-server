@@ -35,7 +35,8 @@ them, so its own scripts (`backup.sh`, `restore.sh`, `status.sh`) keep working u
 
 | Path | Contents |
 | --- | --- |
-| `docker/` | Docker's data-root on AWS: named volumes (MySQL, MinIO, Redis, Elasticsearch), images, build cache |
+| `docker/` | Docker's data-root on AWS: named volumes (MySQL, MinIO, Redis, Elasticsearch) |
+| `containerd/` | Images and build cache on AWS (recent Docker stores these in containerd, not the data-root) |
 | `upstream/` | Pinned upstream checkout, with its generated `.env` (secrets) |
 | `upstream/backups/` | Completed backups, one directory per UTC timestamp |
 | `swapfile` | Swap |
