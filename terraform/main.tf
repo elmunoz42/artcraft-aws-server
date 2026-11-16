@@ -79,6 +79,10 @@ module "instance" {
   allowed_cidrs       = var.allowed_cidrs
   create_eip          = var.create_eip
 
+  mcp_port                       = var.enable_mcp ? var.mcp_port : null
+  mcp_allowed_security_group_ids = var.mcp_allowed_security_group_ids
+  mcp_allowed_cidrs              = var.mcp_allowed_cidrs
+
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
     data_volume_id        = module.storage.volume_id
     data_dir              = local.data_dir
@@ -93,5 +97,7 @@ module "instance" {
     domain_name           = var.domain_name
     basic_auth_user       = var.basic_auth_user
     basic_auth_hash       = var.basic_auth_hash
+    mcp_enabled           = var.enable_mcp
+    mcp_port              = var.mcp_port
   })
 }

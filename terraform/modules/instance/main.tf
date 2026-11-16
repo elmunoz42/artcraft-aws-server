@@ -65,6 +65,29 @@ resource "aws_vpc_security_group_ingress_rule" "web" {
   cidr_ipv4         = each.value.cidr
 }
 
+# MCP: only from named security groups or private ranges, never the internet.
+resource "aws_vpc_security_group_ingress_rule" "mcp_sg" {
+  for_each = var.mcp_port == null ? toset([]) : toset(var.mcp_allowed_security_group_ids)
+
+  security_group_id            = aws_security_group.this.id
+  description                  = "MCP from agent hosts"
+  ip_protocol                  = "tcp"
+  from_port                    = var.mcp_port
+  to_port                      = var.mcp_port
+  referenced_security_group_id = each.value
+}
+
+resource "aws_vpc_security_group_ingress_rule" "mcp_cidr" {
+  for_each = var.mcp_port == null ? toset([]) : toset(var.mcp_allowed_cidrs)
+
+  security_group_id = aws_security_group.this.id
+  description       = "MCP from private range"
+  ip_protocol       = "tcp"
+  from_port         = var.mcp_port
+  to_port           = var.mcp_port
+  cidr_ipv4         = each.value
+}
+
 # ---- Instance ----
 resource "aws_instance" "this" {
   ami                    = var.ami_id

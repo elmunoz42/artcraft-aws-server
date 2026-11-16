@@ -56,6 +56,11 @@ jobs:
           BASIC_AUTH_USER: ci
           BASIC_AUTH_HASH: "$2a$14$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
         run: scripts/compose.sh config --quiet
+      - name: Compose lint, with MCP
+        env:
+          MCP_ENABLED: "true"
+          MCP_TOKEN: ci-token-not-a-secret
+        run: scripts/compose.sh config --quiet
       - name: Build the S3 sync image
         run: docker build -t artcraft-cloud/s3-sync:ci docker/s3-sync
       - name: Sidecar idles cleanly when disabled
@@ -67,3 +72,5 @@ jobs:
       - uses: actions/checkout@v7
       - name: shellcheck
         run: shellcheck -x scripts/*.sh docker/s3-sync/sync.sh
+      - name: MCP installer syntax
+        run: node --check docker/mcp/install-apps.js

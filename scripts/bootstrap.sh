@@ -173,6 +173,25 @@ if [ -n "${domain}" ]; then
   fi
 fi
 
+if mcp_enabled; then
+  step "MCP workspace and token"
+  # The bridge container runs as uid 10001 and may write only here.
+  mkdir -p "${DATA_DIR}/craft-work/inputs" "${DATA_DIR}/craft-work/outputs"
+  chown -R 10001:10001 "${DATA_DIR}/craft-work"
+  if [ -z "$(env_get MCP_TOKEN)" ]; then
+    # Generated here, written to .env (mode 600), never printed.
+    token="$(openssl rand -hex 32)"
+    if grep -q '^MCP_TOKEN=' "${ENV_FILE}"; then
+      sed -i "s|^MCP_TOKEN=.*|MCP_TOKEN=${token}|" "${ENV_FILE}"
+    else
+      echo "MCP_TOKEN=${token}" >> "${ENV_FILE}"
+    fi
+    unset token
+    echo "generated MCP_TOKEN in ${ENV_FILE}"
+  fi
+  chmod 600 "${ENV_FILE}"
+fi
+
 step "backup timer"
 schedule="$(env_get BACKUP_SCHEDULE daily)"
 if [ "${schedule}" = "off" ] || ! command -v systemctl >/dev/null; then
@@ -209,7 +228,7 @@ fi
 
 step "compose configuration"
 acc_compose config --quiet
-echo "valid (s3 sync: $(s3_enabled && echo on || echo off), public https: $(caddy_enabled && echo on || echo off))"
+echo "valid (s3 sync: $(s3_enabled && echo on || echo off), public https: $(caddy_enabled && echo on || echo off), mcp: $(mcp_enabled && echo on || echo off))"
 
 if "${build}"; then
   step "size check"

@@ -30,6 +30,7 @@ them, so its own scripts (`backup.sh`, `restore.sh`, `status.sh`) keep working u
 | --- | --- | --- |
 | `docker-compose.s3.yml` | `S3_SYNC_ENABLED=true` | `s3-sync` sidecar |
 | `docker-compose.caddy.yml` | `DOMAIN_NAME` set | Caddy with HTTPS and a sign-in prompt (experimental) |
+| `docker-compose.mcp.yml` | `MCP_ENABLED=true` | Token-checking proxy and the Craft app MCP bridge, see [mcp.md](mcp.md) |
 
 **Where data lives.** Everything stateful is under `DATA_DIR` (default `/data/artcraft`):
 
@@ -39,6 +40,7 @@ them, so its own scripts (`backup.sh`, `restore.sh`, `status.sh`) keep working u
 | `containerd/` | Images and build cache on AWS (recent Docker stores these in containerd, not the data-root) |
 | `upstream/` | Pinned upstream checkout, with its generated `.env` (secrets) |
 | `upstream/backups/` | Completed backups, one directory per UTC timestamp |
+| `craft-work/` | MCP workspace: `inputs/` and `outputs/` for the Craft apps |
 | `swapfile` | Swap |
 
 On AWS, `DATA_DIR` is the mount point of a separate EBS volume. Terraform manages that

@@ -25,12 +25,14 @@ export DATA_DIR UPSTREAM_DIR
 
 s3_enabled() { [ "$(env_get S3_SYNC_ENABLED false)" = "true" ]; }
 caddy_enabled() { [ -n "$(env_get DOMAIN_NAME)" ]; }
+mcp_enabled() { [ "$(env_get MCP_ENABLED false)" = "true" ]; }
 
 # docker compose with the base file plus whichever add-ons .env switches on.
 acc_compose() {
   local files=(-f "${REPO_DIR}/docker/docker-compose.yml")
   s3_enabled && files+=(-f "${REPO_DIR}/docker/docker-compose.s3.yml")
   caddy_enabled && files+=(-f "${REPO_DIR}/docker/docker-compose.caddy.yml")
+  mcp_enabled && files+=(-f "${REPO_DIR}/docker/docker-compose.mcp.yml")
   local envargs=()
   [ -f "${ENV_FILE}" ] && envargs=(--env-file "${ENV_FILE}")
   docker compose --project-directory "${REPO_DIR}/docker" "${envargs[@]}" "${files[@]}" "$@"

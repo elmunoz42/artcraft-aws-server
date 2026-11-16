@@ -11,6 +11,10 @@ repo_ref = "main"
 # enable_s3_sync = true
 # bucket_name    = "my-artcraft-backups"
 
+# MCP for AI agents on other instances in the same VPC (see docs/mcp.md)
+# enable_mcp                     = true
+# mcp_allowed_security_group_ids = ["sg-0123456789abcdef0"]
+
 # Public HTTPS (experimental). All three are needed together.
 # domain_name     = "art.example.com"
 # basic_auth_user = "me"

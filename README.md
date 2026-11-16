@@ -83,6 +83,8 @@ Create your account on the sign-up page. Accounts belong to your installation.
 | `allowed_cidrs` | `0.0.0.0/0` | Who may reach 80/443 when `domain_name` is set |
 | `basic_auth_user`, `basic_auth_hash` | empty | Sign-in in front of the app; required with `domain_name` |
 | `auto_build` | `true` | `false` prepares the host without building |
+| `enable_mcp` | `false` | MCP endpoint for AI agents, see [docs/mcp.md](docs/mcp.md) |
+| `mcp_allowed_security_group_ids`, `mcp_allowed_cidrs` | empty | Who may reach the MCP port (private sources only) |
 
 Outputs: `public_url`, `instance_id`, `public_ip`, `bucket_name`, `data_volume_id`,
 `ssm_port_forward_command`, `ssm_shell_command`.
@@ -147,6 +149,14 @@ sudo scripts/restore-from-s3.sh --list
 sudo scripts/restore-from-s3.sh --apply          # newest backup; asks before overwriting
 ```
 
+## MCP for AI agents
+
+An optional add-on lets AI agents drive the headless Craft apps (PhotoCraft, VectorCraft,
+DesignCraft, DeckCraft, PdfCraft and more) over the Model Context Protocol. It is off by
+default, protected by a bearer token, and must only be reachable from a private network.
+Set `enable_mcp = true` in Terraform or `MCP_ENABLED=true` in `.env`. See
+[docs/mcp.md](docs/mcp.md).
+
 ## Everyday commands
 
 ```bash
@@ -159,7 +169,7 @@ sudo scripts/compose.sh down      # stop; data is kept
 ## Layout
 
 ```
-docker/       Compose files: base (includes upstream), S3 add-on, Caddy add-on, sync sidecar
+docker/       Compose files: base (includes upstream), S3, Caddy and MCP add-ons, their images
 terraform/    Root module, first-boot script, modules: instance, storage, s3_sync
 scripts/      bootstrap, compose wrapper, backup, restore-from-s3
 docs/         architecture, costs, security
@@ -170,6 +180,7 @@ docs/         architecture, costs, security
 - [Architecture](docs/architecture.md)
 - [Costs](docs/costs.md)
 - [Security](docs/security.md)
+- [MCP for AI agents](docs/mcp.md)
 
 ## License
 

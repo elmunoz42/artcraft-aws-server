@@ -9,6 +9,13 @@ PERSONAL_SERVER_SHA=cc0f21ad3d8871bd365493becf5f0ac5a2562aa6
 # UPSTREAM.lock. Recorded here for reference only.
 ARTCRAFT_SERVICES_SHA=d950e57352a1b28c9296f69f8ae4eff43877de21
 
+# MCP add-on (docker/mcp). Craft CLI versions and checksums are in docker/mcp/apps.lock.json.
+# These three are build-arg defaults in docker/mcp/Dockerfile; change them there too.
+MCP_BRIDGE_REPO=https://github.com/xiewg1987/artcraft-command-bridge.git
+MCP_BRIDGE_SHA=02a72c07a047a74e02565cca1b6822f0998e866c
+SUPERGATEWAY_VERSION=4.2.2
+MCP_NODE_IMAGE=node:22.23.3-bookworm-slim
+
 # Images added by this repo.
 AWS_CLI_IMAGE=amazon/aws-cli:2.40.4
 CADDY_IMAGE=caddy:2.11.9-alpine

@@ -117,6 +117,35 @@ variable "noncurrent_version_expiration_days" {
   default     = 365
 }
 
+variable "enable_mcp" {
+  description = "Run the MCP add-on so AI agents can drive the headless Craft apps. See docs/mcp.md."
+  type        = bool
+  default     = false
+}
+
+variable "mcp_port" {
+  description = "Port of the MCP endpoint."
+  type        = number
+  default     = 8811
+}
+
+variable "mcp_allowed_security_group_ids" {
+  description = "Security groups whose instances may reach the MCP port (agent hosts in the same VPC)."
+  type        = list(string)
+  default     = []
+}
+
+variable "mcp_allowed_cidrs" {
+  description = "CIDR blocks that may reach the MCP port. Use private ranges; the endpoint is plain HTTP with a bearer token."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = !contains(var.mcp_allowed_cidrs, "0.0.0.0/0")
+    error_message = "The MCP port must not be open to the internet. It lets its caller run commands on the instance."
+  }
+}
+
 variable "repo_url" {
   description = "Git URL of this repository (your fork). The instance clones it at first boot."
   type        = string

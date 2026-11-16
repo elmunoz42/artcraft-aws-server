@@ -13,6 +13,11 @@ output "public_ip" {
   value       = var.create_eip ? aws_eip.this[0].public_ip : aws_instance.this.public_ip
 }
 
+output "private_ip" {
+  description = "Private IP of the instance."
+  value       = aws_instance.this.private_ip
+}
+
 output "security_group_id" {
   description = "Security group of the instance."
   value       = aws_security_group.this.id

@@ -54,6 +54,12 @@ AWS_SECRET_ACCESS_KEY=
 DOMAIN_NAME=${domain_name}
 BASIC_AUTH_USER=${basic_auth_user}
 BASIC_AUTH_HASH='${basic_auth_hash}'
+MCP_ENABLED=${mcp_enabled}
+MCP_PORT=${mcp_port}
+MCP_BIND=0.0.0.0
+MCP_TOKEN=
+MCP_APPS=photocraft vectorcraft designcraft deckcraft pdfcraft
+MCP_MEM_LIMIT=1g
 ENVEOF
 
 /opt/artcraft-cloud/scripts/bootstrap.sh ${bootstrap_flags}

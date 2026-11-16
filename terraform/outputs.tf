@@ -23,6 +23,11 @@ output "data_volume_id" {
   value       = module.storage.volume_id
 }
 
+output "mcp_url" {
+  description = "MCP endpoint for agents inside the VPC, or null when the add-on is off. The bearer token is MCP_TOKEN in /opt/artcraft-cloud/.env on the instance."
+  value       = var.enable_mcp ? "http://${module.instance.private_ip}:${var.mcp_port}/mcp" : null
+}
+
 output "ssm_port_forward_command" {
   description = "Run on your computer (needs the AWS CLI Session Manager plugin), then open http://localhost:4201."
   value       = "aws ssm start-session --region ${var.region} --target ${module.instance.instance_id} --document-name AWS-StartPortForwardingSession --parameters portNumber=4201,localPortNumber=4201"

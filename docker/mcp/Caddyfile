@@ -1,0 +1,29 @@
+# MCP entry point: bearer token on every request, then proxy to the bridge.
+# Plain HTTP on purpose: this port is meant for private-network clients only (see docs/mcp.md).
+{
+	auto_https off
+	admin off
+}
+
+:8811 {
+	@authed header Authorization "Bearer {$MCP_TOKEN}"
+
+	handle @authed {
+		# Read-only downloads of what the apps exported: GET /files/<path under outputs/>
+		handle_path /files/* {
+			root * /srv/outputs
+			file_server browse
+		}
+
+		handle {
+			reverse_proxy mcp-bridge:8000 {
+				# MCP streams responses; do not buffer them.
+				flush_interval -1
+			}
+		}
+	}
+
+	handle {
+		respond "unauthorized" 401
+	}
+}

@@ -48,6 +48,24 @@ variable "create_eip" {
   type        = bool
 }
 
+variable "mcp_port" {
+  description = "MCP port to open to the allowed sources. Null opens nothing."
+  type        = number
+  default     = null
+}
+
+variable "mcp_allowed_security_group_ids" {
+  description = "Security groups allowed to reach the MCP port."
+  type        = list(string)
+  default     = []
+}
+
+variable "mcp_allowed_cidrs" {
+  description = "CIDR blocks allowed to reach the MCP port."
+  type        = list(string)
+  default     = []
+}
+
 variable "user_data" {
   description = "Rendered first-boot script."
   type        = string
