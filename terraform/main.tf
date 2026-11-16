@@ -95,10 +95,3 @@ module "instance" {
     basic_auth_hash       = var.basic_auth_hash
   })
 }
-
-check "public_https_needs_sign_in" {
-  assert {
-    condition     = !local.public_https || (var.basic_auth_user != "" && var.basic_auth_hash != "")
-    error_message = "domain_name is set, so basic_auth_user and basic_auth_hash must be set too. ArtCraft's own signup is open to anyone who can reach it."
-  }
-}

@@ -24,7 +24,9 @@ deletions; it is not a substitute for controlling who has access to the AWS acco
 
 The application secrets in `${UPSTREAM_DIR}/.env` are **not** in the backups. To move to a
 new instance without the old data volume you restore data from S3 and new secrets are
-generated, which signs everyone out but loses nothing.
+generated. Sessions are signed with those secrets, so expect everyone to be signed out.
+This path has not been tested end to end; keep a private copy of that `.env` if you want
+to be sure.
 
 ## Public HTTPS (experimental)
 

@@ -49,6 +49,11 @@ variable "domain_name" {
   description = "Optional public hostname. Empty keeps the instance closed to the internet (reach it with SSM port forwarding). Setting it opens 80/443 and enables the experimental Caddy add-on."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.domain_name == "" || (var.basic_auth_user != "" && var.basic_auth_hash != "")
+    error_message = "domain_name is set, so basic_auth_user and basic_auth_hash must be set too. ArtCraft's own signup is open to anyone who can reach it."
+  }
 }
 
 variable "allowed_cidrs" {

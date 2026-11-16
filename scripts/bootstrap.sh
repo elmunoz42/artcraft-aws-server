@@ -83,6 +83,17 @@ if "${data_root}"; then
     echo "data-root is now $(docker info --format '{{.DockerRootDir}}')"
   fi
 
+  # The data directory is usually a "nofail" mount, which systemd does not wait for. Without
+  # this, Docker can start before the volume is mounted and write to the root disk under it.
+  for unit in docker containerd; do
+    dropin="/etc/systemd/system/${unit}.service.d/artcraft-data.conf"
+    if [ ! -e "${dropin}" ]; then
+      mkdir -p "$(dirname "${dropin}")"
+      printf '[Unit]\nRequiresMountsFor=%s\n' "${DATA_DIR}" > "${dropin}"
+      systemctl daemon-reload
+    fi
+  done
+
   # Recent Docker keeps images and build cache in containerd's own directory, not in the
   # data-root. Move that too, or the source build fills the root disk.
   if docker info --format '{{.DriverStatus}}' | grep -q 'io.containerd.snapshotter'; then
