@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+crash.log

@@ -1,0 +1,14 @@
+# Pinned upstream versions for artcraft-cloud. Change deliberately, then rebuild.
+# Read by scripts/lib.sh and .github/workflows/ci.yml (KEY=value, no spaces around "=").
+
+# Community Docker Compose template for ArtCraft (unofficial, labelled experimental upstream).
+PERSONAL_SERVER_REPO=https://github.com/junwonkim07/artcraft-personal-server.git
+PERSONAL_SERVER_SHA=cc0f21ad3d8871bd365493becf5f0ac5a2562aa6
+
+# That template pins the ArtCraft backend itself (storytold/artcraft-services) in its own
+# UPSTREAM.lock. Recorded here for reference only.
+ARTCRAFT_SERVICES_SHA=d950e57352a1b28c9296f69f8ae4eff43877de21
+
+# Images added by this repo.
+AWS_CLI_IMAGE=amazon/aws-cli:2.40.4
+CADDY_IMAGE=caddy:2.11.9-alpine

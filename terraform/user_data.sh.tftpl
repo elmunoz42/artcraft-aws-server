@@ -1,0 +1,59 @@
+#!/bin/bash
+# First-boot setup for artcraft-cloud. Rendered by Terraform: "$${...}" is bash, a single
+# dollar-brace is a Terraform value. The heavy lifting is in scripts/bootstrap.sh.
+set -euxo pipefail
+exec > >(tee -a /var/log/artcraft-cloud-bootstrap.log) 2>&1
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y git curl ca-certificates openssl
+
+# ---- data volume ----
+# On Nitro instances an EBS volume appears as /dev/nvme*n1; its serial is the volume ID
+# without the dash. The attachment is created after the instance, so wait for it.
+VOLUME_ID="${data_volume_id}"
+SERIAL="$${VOLUME_ID//-/}"
+DEVICE=""
+for _ in $(seq 1 120); do
+  DEVICE="$(lsblk -dn -o PATH,SERIAL | awk -v s="$SERIAL" '$2 == s {print $1}')"
+  [ -n "$DEVICE" ] && break
+  sleep 5
+done
+[ -n "$DEVICE" ] || { echo "data volume $VOLUME_ID did not appear"; exit 1; }
+
+# Format only a blank volume. A volume carried over from a previous instance keeps its data.
+if ! blkid "$DEVICE" >/dev/null 2>&1; then
+  mkfs.ext4 -L artcraft-data "$DEVICE"
+fi
+mkdir -p "${data_dir}"
+UUID="$(blkid -s UUID -o value "$DEVICE")"
+grep -q "$UUID" /etc/fstab || echo "UUID=$UUID ${data_dir} ext4 defaults,nofail 0 2" >> /etc/fstab
+mountpoint -q "${data_dir}" || mount "${data_dir}"
+
+# ---- this repository ----
+if [ ! -d /opt/artcraft-cloud/.git ]; then
+  git clone "${repo_url}" /opt/artcraft-cloud
+fi
+git -C /opt/artcraft-cloud fetch --tags origin
+git -C /opt/artcraft-cloud checkout "${repo_ref}"
+
+# ---- settings (no application secrets here; those are generated on the instance) ----
+umask 077
+cat > /opt/artcraft-cloud/.env <<'ENVEOF'
+DATA_DIR=${data_dir}
+UPSTREAM_DIR=${data_dir}/upstream
+BACKUP_SCHEDULE=daily
+S3_SYNC_ENABLED=${s3_sync_enabled}
+S3_BUCKET=${s3_bucket}
+S3_PREFIX=${s3_prefix}
+SYNC_INTERVAL_SECONDS=${sync_interval_seconds}
+SYNC_DELETE=false
+AWS_REGION=${region}
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+DOMAIN_NAME=${domain_name}
+BASIC_AUTH_USER=${basic_auth_user}
+BASIC_AUTH_HASH='${basic_auth_hash}'
+ENVEOF
+
+/opt/artcraft-cloud/scripts/bootstrap.sh ${bootstrap_flags}

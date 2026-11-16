@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.17.2
+      - name: terraform fmt
+        run: terraform fmt -check -recursive -diff
+      - name: terraform init
+        run: terraform init -backend=false -input=false
+      - name: terraform validate
+        run: terraform validate -no-color
+
+  compose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fetch the pinned upstream template
+        run: |
+          set -euo pipefail
+          repo="$(grep -E '^PERSONAL_SERVER_REPO=' UPSTREAM.lock | cut -d= -f2-)"
+          sha="$(grep -E '^PERSONAL_SERVER_SHA=' UPSTREAM.lock | cut -d= -f2-)"
+          git clone "$repo" "$RUNNER_TEMP/upstream"
+          git -C "$RUNNER_TEMP/upstream" checkout --detach "$sha"
+          test "$(git -C "$RUNNER_TEMP/upstream" rev-parse HEAD)" = "$sha"
+          "$RUNNER_TEMP/upstream/scripts/generate-secrets.sh"
+          mkdir -p "$RUNNER_TEMP/upstream/backups"
+          echo "UPSTREAM_DIR=$RUNNER_TEMP/upstream" >> "$GITHUB_ENV"
+      - name: Compose lint, base stack
+        run: scripts/compose.sh config --quiet
+      - name: Compose lint, with S3 sync
+        env:
+          S3_SYNC_ENABLED: "true"
+          S3_BUCKET: ci-example-bucket
+        run: scripts/compose.sh config --quiet
+      - name: Compose lint, with S3 sync and Caddy
+        env:
+          S3_SYNC_ENABLED: "true"
+          S3_BUCKET: ci-example-bucket
+          DOMAIN_NAME: art.example.com
+          BASIC_AUTH_USER: ci
+          BASIC_AUTH_HASH: "$2a$14$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
+        run: scripts/compose.sh config --quiet
+      - name: Build the S3 sync image
+        run: docker build -t artcraft-cloud/s3-sync:ci docker/s3-sync
+      - name: Sidecar idles cleanly when disabled
+        run: docker run --rm artcraft-cloud/s3-sync:ci healthcheck
+
+  shellcheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: shellcheck
+        run: shellcheck -x scripts/*.sh docker/s3-sync/sync.sh

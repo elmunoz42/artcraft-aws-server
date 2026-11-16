@@ -1,0 +1,20 @@
+# artcraft-cloud base stack.
+#
+# ArtCraft has no published images. This file includes the pinned community template
+# (artcraft-personal-server, see ../UPSTREAM.lock), which builds the web app, API and
+# storage from source. scripts/bootstrap.sh clones it to UPSTREAM_DIR.
+#
+# Data lives in Docker named volumes. On the AWS deployment Docker's data-root is moved to
+# ${DATA_DIR}/docker on the EBS data volume, so volumes, images and build cache all sit there.
+#
+# Normal use:   ../scripts/compose.sh up -d
+# By hand:      docker compose --env-file ../.env -f docker-compose.yml up -d
+#
+# The project name must match the upstream file so upstream's own scripts
+# (backup.sh, restore.sh, status.sh) address the same containers and volumes.
+name: artcraft-personal
+
+include:
+  - path: ${UPSTREAM_DIR:-/data/artcraft/upstream}/docker-compose.yml
+    project_directory: ${UPSTREAM_DIR:-/data/artcraft/upstream}
+    env_file: ${UPSTREAM_DIR:-/data/artcraft/upstream}/.env

@@ -1,0 +1,31 @@
+# Public HTTPS add-on. EXPERIMENTAL: upstream is only verified at http://localhost:4201.
+# Read docs/security.md before enabling. scripts/compose.sh adds this file when DOMAIN_NAME is set.
+#
+# Caddy gets a certificate for DOMAIN_NAME automatically, asks for a username and password
+# before anything reaches ArtCraft, and proxies to the upstream webapp container.
+services:
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2.11.9-alpine}
+    restart: unless-stopped
+    depends_on:
+      webapp:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:?set DOMAIN_NAME in .env}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:?set BASIC_AUTH_USER in .env}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:?set BASIC_AUTH_HASH in .env}
+      # Origin the API accepts. Upstream runs in development mode, which only allows localhost.
+      UPSTREAM_ORIGIN: ${UPSTREAM_ORIGIN:-http://localhost:4201}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    mem_limit: 128m
+
+volumes:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,40 @@
+# S3 sync add-on. Adds a sidecar that copies completed backups to a bucket on an interval.
+#
+#   docker compose --env-file ../.env -f docker-compose.yml -f docker-compose.s3.yml up -d
+#
+# scripts/compose.sh adds this file automatically when S3_SYNC_ENABLED=true in .env.
+#
+# It syncs ${UPSTREAM_DIR}/backups (consistent MySQL dump + mirrored media written by
+# scripts/backup.sh), not the live database files: copying those while MySQL is running
+# produces a bucket you cannot restore from.
+services:
+  s3-sync:
+    build:
+      context: ./s3-sync
+      args:
+        AWS_CLI_IMAGE: ${AWS_CLI_IMAGE:-amazon/aws-cli:2.40.4}
+    image: artcraft-cloud/s3-sync:local
+    restart: unless-stopped
+    environment:
+      S3_SYNC_ENABLED: ${S3_SYNC_ENABLED:-true}
+      S3_BUCKET: ${S3_BUCKET:?set S3_BUCKET in .env}
+      S3_PREFIX: ${S3_PREFIX:-backups}
+      SYNC_INTERVAL_SECONDS: ${SYNC_INTERVAL_SECONDS:-300}
+      SYNC_DELETE: ${SYNC_DELETE:-false}
+      AWS_REGION: ${AWS_REGION:-}
+      # Leave empty on EC2: credentials come from the instance role through IMDSv2.
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+    volumes:
+      - ${UPSTREAM_DIR:-/data/artcraft/upstream}/backups:/backups:ro
+      - s3-sync-status:/status
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/sync.sh", "healthcheck"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    mem_limit: 256m
+
+volumes:
+  s3-sync-status:

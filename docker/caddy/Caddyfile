@@ -1,0 +1,16 @@
+# EXPERIMENTAL. See docs/security.md.
+{$DOMAIN_NAME} {
+	encode zstd gzip
+
+	# Sign-in in front of everything. ArtCraft's own signup page is open to anyone who can
+	# reach it, so nothing is proxied without these credentials.
+	basic_auth {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+	}
+
+	reverse_proxy webapp:80 {
+		# The API rejects requests whose Origin is not a localhost origin (development-mode
+		# CORS upstream). Requests here are same-origin, so present the origin it expects.
+		header_up Origin {$UPSTREAM_ORIGIN}
+	}
+}
