@@ -3,7 +3,10 @@
 ## Defaults
 
 - **No inbound ports.** The security group has no ingress rules unless you set
-  `domain_name`. All app ports bind to 127.0.0.1 on the instance.
+  `domain_name` or turn on the MCP add-on. All app ports bind to 127.0.0.1 on the instance.
+- **MCP is private only.** With `enable_mcp`, one port opens to the security groups or
+  private ranges you list, never to the internet, and every request needs a bearer token.
+  See [mcp.md](mcp.md) for what that token allows.
 - **No SSH, no key pairs.** Shell access and port forwarding go through SSM Session Manager,
   authorised by IAM and logged in CloudTrail.
 - **IMDSv2 required.** The hop limit is 2 so the sync sidecar can use the instance role.
