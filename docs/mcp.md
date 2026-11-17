@@ -97,19 +97,26 @@ Inside the bridge the workspace is `/work`. On the host it is `${DATA_DIR}/craft
 | Path the agent uses | Purpose |
 | --- | --- |
 | `/work/inputs/` | Source files: logos, photos, brand assets |
-| `/work/outputs/` | Where to save and export |
+| `/work/outputs/<project>/` | Where to save and export, one folder per project |
+
+**One folder per project.** The server can be shared by several projects or teams. Give
+each one its own folder under `outputs/` (for example `outputs/space-exploration-news/`)
+and have its agents save only there; the folder is created on first write. This is a
+convention, not access control: every holder of the token can read and write all of
+`outputs/`.
 
 **Getting results out.** Everything under `outputs/` can be downloaded with the same token:
 
 ```bash
-curl -H "Authorization: Bearer $ARTCRAFT_MCP_TOKEN" -O http://10.0.0.5:8811/files/banner.png
+curl -H "Authorization: Bearer $ARTCRAFT_MCP_TOKEN" -O http://10.0.0.5:8811/files/my-project/banner.png
 ```
 
-`GET /files/` lists the folder. Small previews (up to 1024 px) also come back inline from
+`GET /files/` lists the folder, `GET /files/my-project/` one project. Small previews (up to 1024 px) also come back inline from
 `artcraft_run`.
 
 **Reviewing in S3.** With the S3 sync add-on on, everything under `outputs/` is also
-copied to `s3://<bucket>/outputs/` within one sync interval. The bucket is private: saving
+copied to `s3://<bucket>/outputs/` within one sync interval, keeping the project folders
+(`outputs/my-project/...`). Hidden files and folders such as `.previews/` are not uploaded. The bucket is private: saving
 a file there does not make it public, and nothing in this setup creates public links.
 
 **Getting source files in.** There is no upload endpoint yet. Put files into
