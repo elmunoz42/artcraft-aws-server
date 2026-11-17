@@ -40,7 +40,7 @@ services:
         condition: service_healthy
     networks: [mcp-internal, mcp-edge]
     ports:
-      - "${MCP_BIND:-0.0.0.0}:${MCP_PORT:-8811}:8811"
+      - "${MCP_BIND:-127.0.0.1}:${MCP_PORT:-8811}:8811"
     environment:
       MCP_TOKEN: ${MCP_TOKEN:?set MCP_TOKEN in .env (scripts/bootstrap.sh generates one)}
     read_only: true

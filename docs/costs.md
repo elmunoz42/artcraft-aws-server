@@ -26,7 +26,8 @@ A default deployment without S3 is roughly **$40 a month**.
   87 hours a month instead of 730, which brings a t3.medium from about $30 to under $4.
   Disk and the public IP still bill around the clock. The stack comes back by itself after
   each start; allow a few minutes. Agents and people must know the hours: nothing answers
-  outside them. To work outside the window, start the instance by hand; the next scheduled
+  outside them. Set `BACKUP_SCHEDULE` in `.env` to a time inside the window, or the backup
+  runs right after each start. To work outside the window, start the instance by hand; the next scheduled
   stop still applies.
 - **Build big, run small.** The source build is the only heavy step. Changing the instance
   type takes a stop and a start, and the data volume keeps the built images. An hour on a
