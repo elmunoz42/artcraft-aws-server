@@ -11,6 +11,9 @@ repo_ref = "main"
 # enable_s3_sync = true
 # bucket_name    = "my-artcraft-backups"
 
+# Run only 5pm-9pm Pacific on weekdays (see docs/costs.md)
+# enable_schedule = true
+
 # MCP for AI agents on other instances in the same VPC (see docs/mcp.md)
 # enable_mcp                     = true
 # mcp_allowed_security_group_ids = ["sg-0123456789abcdef0"]

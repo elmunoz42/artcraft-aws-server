@@ -83,6 +83,7 @@ Create your account on the sign-up page. Accounts belong to your installation.
 | `allowed_cidrs` | `0.0.0.0/0` | Who may reach 80/443 when `domain_name` is set |
 | `basic_auth_user`, `basic_auth_hash` | empty | Sign-in in front of the app; required with `domain_name` |
 | `auto_build` | `true` | `false` prepares the host without building |
+| `enable_schedule` | `false` | Start and stop the instance on a schedule (default 5pm to 9pm Pacific, weekdays) |
 | `enable_mcp` | `false` | MCP endpoint for AI agents, see [docs/mcp.md](docs/mcp.md) |
 | `mcp_allowed_security_group_ids`, `mcp_allowed_cidrs` | empty | Who may reach the MCP port (private sources only) |
 

@@ -20,6 +20,14 @@ A default deployment without S3 is roughly **$40 a month**.
 
 - **Stop the instance when you are not using it.** A stopped instance costs nothing for
   compute; you still pay for the volumes and the Elastic IP.
+- **Run it only when you use it.** `enable_schedule = true` adds two EventBridge schedules
+  that start the instance at 5pm and stop it at 9pm Pacific on weekdays (change the times
+  with `schedule_start_cron`, `schedule_stop_cron` and `schedule_timezone`). That is about
+  87 hours a month instead of 730, which brings a t3.medium from about $30 to under $4.
+  Disk and the public IP still bill around the clock. The stack comes back by itself after
+  each start; allow a few minutes. Agents and people must know the hours: nothing answers
+  outside them. To work outside the window, start the instance by hand; the next scheduled
+  stop still applies.
 - **Build big, run small.** The source build is the only heavy step. Changing the instance
   type takes a stop and a start, and the data volume keeps the built images. An hour on a
   t3.xlarge (4 vCPU, 16 GB) costs about $0.17; you can then go back to t3.medium.

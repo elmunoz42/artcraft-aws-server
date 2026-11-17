@@ -65,6 +65,7 @@ copied mid-write are not restorable.
 | --- | --- |
 | `modules/storage` | Encrypted gp3 data volume |
 | `modules/instance` | IAM role and profile (SSM only), security group, instance, volume attachment, optional Elastic IP |
+| `modules/schedule` | Optional EventBridge schedules and a role that start and stop the instance |
 | `modules/s3_sync` | Bucket (versioned, encrypted, public access blocked, TLS only), lifecycle rule, bucket-scoped policy on the instance role |
 
 `user_data.sh.tftpl` mounts the volume, clones this repo, writes `.env` and calls

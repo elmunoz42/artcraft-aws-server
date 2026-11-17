@@ -152,6 +152,12 @@ What it does not do:
 - **One job's memory can crowd the rest.** On a 4 GB instance the main stack already uses
   most of the RAM. Heavy edits will be slow and may hit `MCP_MEM_LIMIT`.
 
+## Working hours
+
+If the instance runs on a schedule (`enable_schedule`, see [costs.md](costs.md)), the MCP
+endpoint is only there during those hours. Tell your agents the window, and have them check
+the time before starting design work rather than retrying a dead connection.
+
 ## Check it
 
 ```bash

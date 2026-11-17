@@ -117,6 +117,30 @@ variable "noncurrent_version_expiration_days" {
   default     = 365
 }
 
+variable "enable_schedule" {
+  description = "Run the instance only during set hours to save money. See docs/costs.md."
+  type        = bool
+  default     = false
+}
+
+variable "schedule_timezone" {
+  description = "IANA time zone for the schedule."
+  type        = string
+  default     = "America/Los_Angeles"
+}
+
+variable "schedule_start_cron" {
+  description = "When to start the instance, as EventBridge cron fields (minutes hours day-of-month month day-of-week year). Default: 5pm on weekdays."
+  type        = string
+  default     = "0 17 ? * MON-FRI *"
+}
+
+variable "schedule_stop_cron" {
+  description = "When to stop the instance. Default: 9pm on weekdays."
+  type        = string
+  default     = "0 21 ? * MON-FRI *"
+}
+
 variable "enable_mcp" {
   description = "Run the MCP add-on so AI agents can drive the headless Craft apps. See docs/mcp.md."
   type        = bool

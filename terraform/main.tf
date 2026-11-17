@@ -65,6 +65,17 @@ module "s3_sync" {
   noncurrent_version_expiration_days = var.noncurrent_version_expiration_days
 }
 
+module "schedule" {
+  source = "./modules/schedule"
+  count  = var.enable_schedule ? 1 : 0
+
+  name        = var.name
+  instance_id = module.instance.instance_id
+  timezone    = var.schedule_timezone
+  start_cron  = var.schedule_start_cron
+  stop_cron   = var.schedule_stop_cron
+}
+
 module "instance" {
   source = "./modules/instance"
 
