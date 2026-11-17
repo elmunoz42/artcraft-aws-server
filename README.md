@@ -96,7 +96,7 @@ bucket; a bucket that still holds backups must be emptied first.
 ## Run on any Linux host
 
 ```bash
-git clone https://github.com/carlos-mk/artcraft-aws-server.git /opt/artcraft-cloud
+git clone https://github.com/elmunoz42/artcraft-aws-server.git /opt/artcraft-cloud
 cd /opt/artcraft-cloud
 cp .env.example .env          # set DATA_DIR and UPSTREAM_DIR if /data/artcraft does not suit you
 sudo scripts/bootstrap.sh --install-docker --swap-gb 8 --build --start
