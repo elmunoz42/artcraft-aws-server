@@ -129,7 +129,10 @@ docker compose --env-file ../.env -f docker-compose.yml -f docker-compose.s3.yml
 | `SYNC_INTERVAL_SECONDS` | `300` | Seconds between runs |
 | `SYNC_DELETE` | `false` | Also delete from the bucket what was deleted locally |
 
-**What is synced:** the backups directory, not the live database. Copying MySQL's files
+**What is synced:** two things. Files that agents export through the
+[MCP add-on](docs/mcp.md) go to `s3://<bucket>/outputs/` within one sync interval, so you
+can review them from the S3 console. And the backups directory goes to
+`s3://<bucket>/backups/`, not the live database. Copying MySQL's files
 while it runs gives a copy that cannot be restored, so the timer first writes a consistent
 backup (database dump plus media, with checksums) and the sidecar uploads that. The bucket
 is therefore as fresh as your last backup: daily by default, change `BACKUP_SCHEDULE` in

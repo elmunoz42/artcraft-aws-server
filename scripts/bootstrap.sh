@@ -173,6 +173,11 @@ if [ -n "${domain}" ]; then
   fi
 fi
 
+if s3_enabled; then
+  # The sync sidecar mounts this folder even when the MCP add-on is off.
+  mkdir -p "${DATA_DIR}/craft-work/outputs"
+fi
+
 if mcp_enabled; then
   step "MCP workspace and token"
   # The bridge container runs as uid 10001 and may write only here.

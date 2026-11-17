@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Sync /backups to s3://$S3_BUCKET/$S3_PREFIX on an interval.
+# Sync folders to S3 on an interval:
+#   /backups  ->  s3://$S3_BUCKET/$S3_PREFIX/           completed backups
+#   /outputs  ->  s3://$S3_BUCKET/$S3_OUTPUTS_PREFIX/   files exported by the Craft apps (MCP add-on)
+# A folder that is not mounted or is missing is skipped.
 #
 #   sync.sh run          loop forever (container default)
 #   sync.sh once         one sync, exit with its status
@@ -13,6 +16,7 @@
 set -uo pipefail
 
 SRC="${SYNC_SOURCE:-/backups}"
+OUTPUTS_SRC="${SYNC_OUTPUTS_SOURCE:-/outputs}"
 STATUS_DIR="${STATUS_DIR:-/status}"
 INTERVAL="${SYNC_INTERVAL_SECONDS:-300}"
 
@@ -26,23 +30,29 @@ if [ -n "${AWS_REGION:-}" ]; then export AWS_DEFAULT_REGION="${AWS_REGION}"; els
 enabled() { [ "${S3_SYNC_ENABLED:-false}" = "true" ]; }
 
 destination() {
-  local prefix="${S3_PREFIX:-}"
+  local prefix="$1"
   prefix="${prefix#/}"; prefix="${prefix%/}"
   if [ -n "${prefix}" ]; then echo "s3://${S3_BUCKET}/${prefix}/"; else echo "s3://${S3_BUCKET}/"; fi
 }
 
-sync_once() {
-  local dest args started rc
-  [ -n "${S3_BUCKET:-}" ] || { log "S3_BUCKET is empty"; return 2; }
-  [ -d "${SRC}" ] || { log "source ${SRC} is missing"; return 2; }
-  dest="$(destination)"
-  # Backups in progress are written to ".<timestamp>.partial" and renamed when complete.
-  args=(s3 sync "${SRC}/" "${dest}" --exclude ".*.partial/*" --no-progress --only-show-errors)
+# One folder. Backups in progress are written to ".<timestamp>.partial" and renamed when
+# complete; hidden folders such as caches are never uploaded.
+sync_dir() {
+  local src="$1" dest args
+  dest="$(destination "$2")"
+  args=(s3 sync "${src}/" "${dest}" --exclude ".*" --exclude "*/.*" --no-progress --only-show-errors)
   [ "${SYNC_DELETE:-false}" = "true" ] && args+=(--delete)
-  started="$(date +%s)"
-  log "sync start ${SRC}/ -> ${dest} (delete=${SYNC_DELETE:-false})"
+  log "sync ${src}/ -> ${dest} (delete=${SYNC_DELETE:-false})"
   aws "${args[@]}"
-  rc=$?
+}
+
+sync_once() {
+  local started rc=0 did=0
+  [ -n "${S3_BUCKET:-}" ] || { log "S3_BUCKET is empty"; return 2; }
+  started="$(date +%s)"
+  if [ -d "${SRC}" ]; then did=1; sync_dir "${SRC}" "${S3_PREFIX:-backups}" || rc=$?; fi
+  if [ -d "${OUTPUTS_SRC}" ]; then did=1; sync_dir "${OUTPUTS_SRC}" "${S3_OUTPUTS_PREFIX:-outputs}" || rc=$?; fi
+  [ "${did}" -eq 1 ] || { log "nothing to sync: neither ${SRC} nor ${OUTPUTS_SRC} exists"; return 2; }
   if [ "${rc}" -eq 0 ]; then
     date +%s > "${STATUS_DIR}/last_success"
     date -u +%Y-%m-%dT%H:%M:%SZ > "${STATUS_DIR}/last_success_iso"

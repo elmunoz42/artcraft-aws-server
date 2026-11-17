@@ -108,6 +108,10 @@ curl -H "Authorization: Bearer $ARTCRAFT_MCP_TOKEN" -O http://10.0.0.5:8811/file
 `GET /files/` lists the folder. Small previews (up to 1024 px) also come back inline from
 `artcraft_run`.
 
+**Reviewing in S3.** With the S3 sync add-on on, everything under `outputs/` is also
+copied to `s3://<bucket>/outputs/` within one sync interval. The bucket is private: saving
+a file there does not make it public, and nothing in this setup creates public links.
+
 **Getting source files in.** There is no upload endpoint yet. Put files into
 `${DATA_DIR}/craft-work/inputs/` on the instance yourself (they must be readable by uid
 10001), or have agents build documents from scratch. The bridge has no internet access, so

@@ -4,6 +4,9 @@
 #
 # scripts/compose.sh adds this file automatically when S3_SYNC_ENABLED=true in .env.
 #
+# It also uploads ${DATA_DIR}/craft-work/outputs, the files agents export through the MCP
+# add-on, to a separate prefix so you can review them in S3.
+#
 # It syncs ${UPSTREAM_DIR}/backups (consistent MySQL dump + mirrored media written by
 # scripts/backup.sh), not the live database files: copying those while MySQL is running
 # produces a bucket you cannot restore from.
@@ -19,6 +22,7 @@ services:
       S3_SYNC_ENABLED: ${S3_SYNC_ENABLED:-true}
       S3_BUCKET: ${S3_BUCKET:?set S3_BUCKET in .env}
       S3_PREFIX: ${S3_PREFIX:-backups}
+      S3_OUTPUTS_PREFIX: ${S3_OUTPUTS_PREFIX:-outputs}
       SYNC_INTERVAL_SECONDS: ${SYNC_INTERVAL_SECONDS:-300}
       SYNC_DELETE: ${SYNC_DELETE:-false}
       AWS_REGION: ${AWS_REGION:-}
@@ -27,6 +31,8 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
     volumes:
       - ${UPSTREAM_DIR:-/data/artcraft/upstream}/backups:/backups:ro
+      # Files the Craft apps export through the MCP add-on (empty when that add-on is off).
+      - ${DATA_DIR:-/data/artcraft}/craft-work/outputs:/outputs:ro
       - s3-sync-status:/status
     healthcheck:
       test: ["CMD", "/usr/local/bin/sync.sh", "healthcheck"]
