@@ -1,6 +1,6 @@
 # Copy to terraform.tfvars and edit.
 region   = "us-east-1"
-repo_url = "https://github.com/YOUR_USER/artcraft-cloud.git"
+repo_url = "https://github.com/carlos-mk/artcraft-aws-server.git"
 repo_ref = "main"
 
 # instance_type  = "t3.medium"
